@@ -49,6 +49,7 @@ def index():
 @app.route('/api/user/signup',methods=['POST'])
 @cross_origin()
 def user_signup():
+    print("Sign up request")
     data=request.get_json(force=True) 
     hashed_password=generate_password_hash(data['password'],method='sha256')
     new_user=User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],password=hashed_password)
@@ -62,6 +63,7 @@ def user_signup():
 @app.route('/api/user/signin',methods=['POST'])
 @cross_origin()
 def user_signin():
+    print("Sign in request")
     data=request.get_json(force=True) 
     user=User.query.filter_by(email=data["email"]).first()
     print(user)
