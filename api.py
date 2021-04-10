@@ -27,7 +27,6 @@ def token_required(f):
     @wraps(f)
     def check_token(*args,**kwargs):
         token=request.args.get('token')
-        print("Recieved-->",token)
         if not token:
             return jsonify({'status': "failure",'message': "Provide a Token"}),401
         try:
@@ -49,29 +48,26 @@ def index():
 @app.route('/api/user/signup',methods=['POST'])
 def user_signup():
     data=request.get_json(force=True) 
-    print("user data",data)
     hashed_password=generate_password_hash(data['password'],method='sha256')
     new_user=User(first_name=data['first_name'],last_name=data['last_name'],email=data['email'],password=hashed_password)
     db.session.add(new_user)
     try:
         db.session.commit()
-        token= jwt.encode({"email": user.email, "exp": datetime.datetime.utcnow() +datetime.timedelta(minutes=5)},app.config["SECRET_KEY"])
-        return jsonify({'status': "success",'message': "User created",'toke':token}),201
+        token= jwt.encode({"email": data['email'], "exp": datetime.datetime.utcnow() +datetime.timedelta(minutes=5)},app.config["SECRET_KEY"])
+        return jsonify({'status': "success",'message': "User created",'token':token}),201
     except IntegrityError:
         return jsonify({'status': "failure",'message': "User already exists (Email taken)"}),409
 @app.route('/api/user/signin',methods=['POST'])
 def user_signin():
     data=request.get_json(force=True) 
-    print("user data",data)
     user=User.query.filter_by(email=data["email"]).first()
     print(user)
     if user:
         check_password=check_password_hash(user.password,data['password'])
-        print("PASSWORD-->",check_password)
         if check_password:
             token= jwt.encode({"email": user.email, "exp": datetime.datetime.utcnow() +datetime.timedelta(minutes=5)},app.config["SECRET_KEY"])
             return jsonify({'status': 'success','message': 'User Logged in','token':token}),200
     return jsonify({'status': "failure",'message': 'Invalid Credentials'}) ,401
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
