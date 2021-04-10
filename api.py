@@ -9,7 +9,7 @@ import datetime
 
 
 app= Flask(__name__)
-cors = CORS(app)
+cors=CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.config["SECRET_KEY"]="uniquekeyformyapp"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///userdata.db"
@@ -41,11 +41,13 @@ def token_required(f):
 
 @app.route('/api/user',methods=['GET'])
 @token_required
+@cross_origin()
 def index():
     return jsonify({'status': "success",'message': "Authenticated User"}),200
 
 
 @app.route('/api/user/signup',methods=['POST'])
+@cross_origin()
 def user_signup():
     data=request.get_json(force=True) 
     hashed_password=generate_password_hash(data['password'],method='sha256')
@@ -58,6 +60,7 @@ def user_signup():
     except IntegrityError:
         return jsonify({'status': "failure",'message': "User already exists (Email taken)"}),409
 @app.route('/api/user/signin',methods=['POST'])
+@cross_origin()
 def user_signin():
     data=request.get_json(force=True) 
     user=User.query.filter_by(email=data["email"]).first()
